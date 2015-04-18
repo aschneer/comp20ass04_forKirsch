@@ -101,9 +101,45 @@ app.post("/sendLocation",function(req,res){
 // Handle GET requests to "/location.json".
 // Respond with...
 app.get("/location.json",function(req,res){
-	res.status(200);
-	res.send();
-
+	var input = req.body;
+	if(!validator.isAlphanumeric(input.login))
+	{
+		res.status(400);
+		res.json({});
+	}
+	else
+	{
+		db.collection("locations", function(err,coll){
+			if(!err)
+			{
+				coll.find({login: {$eq: input.login}}).toArray(function(err,docs){
+					if(!err)
+					{
+						if(docs.length != 0)
+						{
+							res.status(200);
+							res.send(docs[0]);
+						}
+						else
+						{
+							res.status(200);
+							res.json({});
+						}
+					}
+					else
+					{
+						res.status(500);
+						res.send("Database server error: Failed to query collection.");
+					}
+				});
+			}
+			else
+			{
+				res.status(500);
+				res.send("Database server error: Collection not found.");
+			}
+		});
+	}
 });
 // Handle GET requests to "/".
 // Display an HTML page with a
