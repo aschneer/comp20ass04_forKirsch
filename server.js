@@ -58,10 +58,6 @@ app.post("/sendLocation",function(req,res){
 	else
 	{
 		// Grab current time.
-
-		// THIS MIGHT BE GRABBING WRONG TIME,
-		// DOUBLE CHECK LATER.
-
 		t = new Date();
 		t = new Date(t.getTime());
 		t = t.toJSON();
@@ -75,7 +71,7 @@ app.post("/sendLocation",function(req,res){
 			{
 				console.log("collection opened in POST.");
 				// Empty the collection.
-	//			coll.remove({},{},function(){
+				coll.remove({},{},function(){
 					// Perform upsert on data provided by user.
 					coll.update({login: {$eq: input.login}}, newDoc, {upsert: true, w: 1}, function(err2,result){
 						if(err2 === null)
@@ -103,7 +99,7 @@ app.post("/sendLocation",function(req,res){
 							res.send("Database server error: Failed to update document.");
 						}
 					});
-	//			});
+				});
 			}
 			else
 			{
@@ -178,7 +174,7 @@ app.get("/",function(req,res){
 			console.log("collection opened in GET /.");
 			console.log(err1);
 
-			coll.find({},{sort: [["created_at","ascending"]]}).toArray(function(err2,docs){
+			coll.find({},{sort: [["created_at","descending"]]}).toArray(function(err2,docs){
 				if(err2 === null)
 				{
 					// Output sorted database
