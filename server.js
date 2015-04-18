@@ -13,7 +13,15 @@ var app = express();
 // Start MongoDB server.
 var mongoURI = (process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || "mongodb://localhost/comp20ass03mapserver");
 var db = MongoClient.connect(mongoURI, function(err, dbConnection) {
-	db = dbConnection;
+	if(!err)
+	{
+		db = dbConnection;
+	}
+	else
+	{
+		// Failed to connect to
+		// database server.
+	}
 });
 
 // Set the port for the server to
@@ -49,21 +57,45 @@ app.post("/sendLocation",function(req,res){
 
 		// Prepare new data for insertion
 		// into database (upsert).
-		var newDoc1 = {login: input.login, lat: input.lat, lng: input.lng, created_at: t};
-
+		var newDoc = {login: input.login, lat: input.lat, lng: input.lng, created_at: t};
+		// Open the "locations" collection.
 		db.collection("locations", function(err,coll){
-//			coll.remove({},{},function(){
-				coll.update({login: {$eq: input.login}}, newDoc1, {upsert: true, w: 1}, function(err,result){
-					coll.find().toArray(function(err,docs){
-						res.status(200);
-						res.json(docs);
+			if(!err)
+			{
+				// Empty the collection.
+	//			coll.remove({},{},function(){
+					// Perform upsert on data provided by user.
+					coll.update({login: {$eq: input.login}}, newDoc, {upsert: true, w: 1}, function(err,result){
+						if(!err)
+						{
+							// Get entire collection and return to client.
+							coll.find().toArray(function(err,docs){
+								if(!err)
+								{
+									res.status(200);
+									res.json(docs);
+								}
+								else
+								{
+									res.status(500);
+									res.send("Database server error: Failed to query collection.");
+								}
+							});
+						}
+						else
+						{
+							res.status(500);
+							res.send("Database server error: Failed to update document.");
+						}
 					});
-				});
-//			});
+	//			});
+			}
+			else
+			{
+				res.status(500);
+				res.send("Database server error: Collection not found.");
+			}
 		});
-
-		//{"_id":"54e95ff46cca2a030048cf14","login":"mchow","lat":40.67693,"lng":117.23193,"created_at":"2015-02-22T05:12:24.596Z"}
-
 	}
 });
 // Handle GET requests to "/location.json".
