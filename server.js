@@ -35,6 +35,13 @@ app.use(bodyParser.json());
 // For parsing application/x-www-form-urlencoded.
 app.use(bodyParser.urlencoded({extended: true}));
 
+// Enable cross-origin-resource-sharing (CORS).
+app.use(function(req, res, next) {
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	next();
+});
+
 // Handle POST requests to "/sendLocation".
 // Respond with...
 app.post("/sendLocation",function(req,res){
@@ -44,6 +51,7 @@ app.post("/sendLocation",function(req,res){
 		|| !validator.isFloat(input.lat)
 		|| !validator.isFloat(input.lng))
 	{
+		res.set("Content-Type","text/html");
 		res.status(400);
 		res.json({"error":"Whoops, something is wrong with your data!"});
 	}
@@ -76,11 +84,13 @@ app.post("/sendLocation",function(req,res){
 							coll.find().toArray(function(err3,docs){
 								if(err3 === null)
 								{
+									res.set("Content-Type","text/html");
 									res.status(200);
 									res.json(docs);
 								}
 								else
 								{
+									res.set("Content-Type","text/html");
 									res.status(500);
 									res.send("Database server error: Failed to query collection.");
 								}
@@ -88,6 +98,7 @@ app.post("/sendLocation",function(req,res){
 						}
 						else
 						{
+							res.set("Content-Type","text/html");
 							res.status(500);
 							res.send("Database server error: Failed to update document.");
 						}
@@ -96,6 +107,7 @@ app.post("/sendLocation",function(req,res){
 			}
 			else
 			{
+				res.set("Content-Type","text/html");
 				res.status(500);
 				res.send("Database server error: Collection not found.");
 			}
@@ -105,21 +117,19 @@ app.post("/sendLocation",function(req,res){
 // Handle GET requests to "/location.json".
 // Respond with...
 app.get("/location.json",function(req,res){
-	var input = req.body;
-	
-	// FIGURE OUT HOW TO SEND PARAMETERS WITH GET REQUEST.
+	//Grab route query parameters.
+	var input = req.query;
 
 	console.log(input);
 
-
-/*
 	if(!validator.isAlphanumeric(input.login))
 	{
+		res.set("Content-Type","text/html");
 		res.status(400);
 		res.json({});
 	}
 	else
-	{*/
+	{
 		db.collection("locations", function(err1,coll){
 			if(err1 === null)
 			{
@@ -130,17 +140,20 @@ app.get("/location.json",function(req,res){
 					{
 						if(docs.length != 0)
 						{
+							res.set("Content-Type","text/html");
 							res.status(200);
 							res.send(docs[0]);
 						}
 						else
 						{
+							res.set("Content-Type","text/html");
 							res.status(200);
 							res.json({});
 						}
 					}
 					else
 					{
+						res.set("Content-Type","text/html");
 						res.status(500);
 						res.send("Database server error: Failed to query collection.");
 					}
@@ -148,11 +161,12 @@ app.get("/location.json",function(req,res){
 			}
 			else
 			{
+				res.set("Content-Type","text/html");
 				res.status(500);
 				res.send("Database server error: Collection not found.");
 			}
 		});
-//	}
+	}
 });
 // Handle GET requests to "/".
 // Display an HTML page with a
@@ -186,11 +200,13 @@ app.get("/",function(req,res){
 						htmlContent += "</p>";
 					}
 					htmlContent += "</body></html>";
+					res.set("Content-Type","text/html");
 					res.status(200);
 					res.send(htmlContent);
 				}
 				else
 				{
+					res.set("Content-Type","text/html");
 					res.status(500);
 					res.send("Database server error: Failed to query collection.");
 				}
@@ -199,6 +215,7 @@ app.get("/",function(req,res){
 		else
 		{
 			console.log(err1);
+			res.set("Content-Type","text/html");
 			res.status(500);
 			res.send("Database server error: Collection not found***.");
 		}
