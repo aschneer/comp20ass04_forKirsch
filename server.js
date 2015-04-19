@@ -45,8 +45,15 @@ app.use(function(req, res, next) {
 // Handle POST requests to "/sendLocation".
 // Respond with...
 app.post("/sendLocation",function(req,res){
-	// Validate input.
+	// Grab post request body.
 	var input = req.body;
+	// Make sure lat and lng values
+	// are stored as floats, and login
+	// is a string.
+	input.login = String(input.login);
+	input.lat = parseFloat(input.lat);
+	input.lng = parseFloat(input.lng);
+	// Validate input.
 	if(!validator.isAlphanumeric(input.login)
 		|| !validator.isFloat(input.lat)
 		|| !validator.isFloat(input.lng))
@@ -69,36 +76,32 @@ app.post("/sendLocation",function(req,res){
 		db.collection("locations", function(err1,coll){
 			if(err1 === null)
 			{
-				console.log("collection opened in POST.");
-				// Empty the collection.
-				coll.remove({},{},function(){
-					// Perform upsert on data provided by user.
-					coll.update({login: {$eq: input.login}}, newDoc, {upsert: true, w: 1}, function(err2,result){
-						if(err2 === null)
-						{
-							// Get entire collection and return to client.
-							coll.find().toArray(function(err3,docs){
-								if(err3 === null)
-								{
-									res.set("Content-Type","text/html");
-									res.status(200);
-									res.json(docs);
-								}
-								else
-								{
-									res.set("Content-Type","text/html");
-									res.status(500);
-									res.send("Database server error: Failed to query collection.");
-								}
-							});
-						}
-						else
-						{
-							res.set("Content-Type","text/html");
-							res.status(500);
-							res.send("Database server error: Failed to update document.");
-						}
-					});
+				// Perform upsert on data provided by user.
+				coll.update({login: {$eq: input.login}}, newDoc, {upsert: true, w: 1}, function(err2,result){
+					if(err2 === null)
+					{
+						// Get entire collection and return to client.
+						coll.find().toArray(function(err3,docs){
+							if(err3 === null)
+							{
+								res.set("Content-Type","text/html");
+								res.status(200);
+								res.json(docs);
+							}
+							else
+							{
+								res.set("Content-Type","text/html");
+								res.status(500);
+								res.send("Database server error: Failed to query collection.");
+							}
+						});
+					}
+					else
+					{
+						res.set("Content-Type","text/html");
+						res.status(500);
+						res.send("Database server error: Failed to update document.");
+					}
 				});
 			}
 			else
@@ -115,9 +118,7 @@ app.post("/sendLocation",function(req,res){
 app.get("/location.json",function(req,res){
 	//Grab route query parameters.
 	var input = req.query;
-
-	console.log(input);
-
+	// Validate input.
 	if(!validator.isAlphanumeric(input.login))
 	{
 		res.set("Content-Type","text/html");
@@ -129,16 +130,28 @@ app.get("/location.json",function(req,res){
 		db.collection("locations", function(err1,coll){
 			if(err1 === null)
 			{
-				console.log("collection opened in GET /location.json.");
-
 				coll.find({login: {$eq: input.login}}).toArray(function(err2,docs){
 					if(err2 === null)
 					{
 						if(docs.length != 0)
 						{
-							res.set("Content-Type","text/html");
-							res.status(200);
-							res.send(docs[0]);
+							var doc = docs[0];
+							// Check if record is empty.
+							if(!(doc._id === undefined)
+								&& !(doc.lat === undefined)
+								&& !(doc.lng === undefined)
+								&& !(doc.created_at === undefined))
+							{
+								res.set("Content-Type","text/html");
+								res.status(200);
+								res.send(docs[0]);
+							}
+							else
+							{
+								res.set("Content-Type","text/html");
+								res.status(200);
+								res.json({});
+							}
 						}
 						else
 						{
@@ -171,9 +184,6 @@ app.get("/",function(req,res){
 	db.collection("locations", function(err1,coll){
 		if(err1 === null)
 		{
-			console.log("collection opened in GET /.");
-			console.log(err1);
-
 			coll.find({},{sort: [["created_at","descending"]]}).toArray(function(err2,docs){
 				if(err2 === null)
 				{
@@ -210,7 +220,6 @@ app.get("/",function(req,res){
 		}
 		else
 		{
-			console.log(err1);
 			res.set("Content-Type","text/html");
 			res.status(500);
 			res.send("Database server error: Collection not found***.");

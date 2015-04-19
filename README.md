@@ -1,5 +1,16 @@
-# mapServer
-Tufts COMP 20 Assignment 3 - server for Assignment 2 "The Real Marauder's Map."
+Andrew Schneer
+COMP 20 - Web Programming
+Ming Chow
+Assignment 03
+"The Real Marauder's Map" Web Server
+04/15/2015
 
-This folder contains the server code
-for the "Real Marauder's Map" assignment.
+All aspects of this assignment have been
+correctly implemented to my knowledge.
+
+I received advice from a couple of other
+students, particularly Phillip Booth.  I
+also received some tips from TA Lucy Qin.
+
+I spent approximately 12-15 hours on this
+assignment.
