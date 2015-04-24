@@ -231,7 +231,7 @@ app.get("/",function(req,res){
 app.get("/dbclear",function(req,res){
 	//Grab route query parameters.
 	var input = req.query;
-	if(input.pswd === "pizza")
+	if(input.pswd === "kirsch")
 	{
 		db.collection("locations", function(err1,coll){
 			if(err1 === null)
