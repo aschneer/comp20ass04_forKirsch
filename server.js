@@ -265,6 +265,7 @@ app.get("/dbclear",function(req,res){
 		res.status(403);
 		res.send("Failure: Access denied.");
 	}
+});
 
 // Listen for HTTP requests.
 app.listen(app.get("port"));
